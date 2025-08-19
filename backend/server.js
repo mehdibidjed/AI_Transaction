@@ -3,12 +3,12 @@ import bodyParser from "body-parser";
 import receiptRoutes from "./routes/receiptRoute.js";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-
+import cors from "cors";
 const app = express();
 const PORT = 5000;
 
 app.use(bodyParser.json());
-
+app.use(cors());
 // Initialize database connection
 const initDB = async () => {
   const db = await open({

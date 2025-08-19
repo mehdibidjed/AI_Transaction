@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Upload } from "lucide-react"; // 👉 jolie icône (tu peux installer `lucide-react` avec npm)
+import { Upload } from "lucide-react";
+import { uploadReceipt } from "../api/api";
 
-function UploadBox() {
+function UploadBox({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -17,12 +19,28 @@ function UploadBox() {
     e.preventDefault();
   };
 
-  const handleUpload = () => {
-    if (file) {
-      alert(`Uploading: ${file.name}`);
-      // 👉 ici tu mettras ton appel backend API
-    } else {
+  const handleUpload = async () => {
+    if (!file) {
       alert("Please select a file first.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await uploadReceipt(file);
+
+      // 👉 notify parent (TransactionIDDetection) with response
+      if (onUploadSuccess) {9
+        console.log("Upload data:", response.saved);
+        onUploadSuccess(response.saved);
+      }
+
+      setFile(null);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Upload failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,8 +69,12 @@ function UploadBox() {
         </label>
 
         {/* Bouton d’upload */}
-        <button className="btn btn-primary px-4" onClick={handleUpload}>
-          Upload Image
+        <button
+          className="btn btn-primary px-4"
+          onClick={handleUpload}
+          disabled={loading}
+        >
+          {loading ? "Uploading..." : "Upload Image"}
         </button>
       </div>
     </div>

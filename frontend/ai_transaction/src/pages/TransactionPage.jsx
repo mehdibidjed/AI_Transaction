@@ -1,18 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import UploadBox from "../components/uploadbox";
+import { getHistory } from "../api/api";
 
 function TransactionIDDetection() {
-  const [extractedId, setExtractedId] = useState("TX1234567890");
-  const [history,setHistory] = useState([
-    { date: "Apr 23, 2024", fileName: "receipt1.png", id: "TX1234567890" },
-    { date: "Apr 23, 2024", fileName: "receipt2.png", id: "TX0987652421" },
-    { date: "Apr 22, 2024", fileName: "receipt3.png", id: "TX5578601234" },
-    { date: "Apr 22, 2024", fileName: "receipt4.png", id: "-" },
-  ]);
+  const [extractedId, setExtractedId] = useState("");
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const data = await getHistory();
+        setHistory(data);
+      } catch (error) {
+        console.error("Failed to fetch history:", error);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(extractedId);
+    if (extractedId) {
+      navigator.clipboard.writeText(extractedId);
+      alert("Copied to clipboard!");
+    }
+  };
+
+  // 👉 Called when UploadBox finishes upload
+  const handleUploadSuccess = (data) => {
+    // backend should return something like:
+    // { transaction_id: "TX123...", filename: "receipt.png", date: "2024-04-23" }
+
+    setExtractedId(data.transaction_id || "");
   };
 
   return (
@@ -22,40 +42,20 @@ function TransactionIDDetection() {
         <h3 className="fw-bold text-primary">Transaction ID Detection</h3>
       </div>
 
+      {/* Upload + Extracted ID Section */}
       <div className="row">
-        {/* Upload & History */}
         <div className="col-md-4 mb-4">
-          <UploadBox />
-          <div className="card shadow-sm">
-            <div className="card-header fw-bold">History</div>
-            <div className="card-body p-0">
-              <table className="table table-hover mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>Date</th>
-                    <th>File Name</th>
-                    <th>Extracted ID</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.date}</td>
-                      <td>{item.fileName}</td>
-                      <td>{item.id}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <UploadBox onUploadSuccess={handleUploadSuccess} />
         </div>
 
-        {/* Receipt Preview & Extracted ID */}
         <div className="col-md-8">
           <div className="card shadow-sm text-center p-4 mb-4">
             <h6 className="fw-bold text-secondary">RECEIPT</h6>
-            <p className="mb-1 text-muted">Processing...</p>
+            <p className="mb-1 text-muted">
+              {extractedId
+                ? "Receipt processed!"
+                : "Upload a receipt to extract ID"}
+            </p>
           </div>
 
           <div className="card shadow-sm p-4">
@@ -67,7 +67,11 @@ function TransactionIDDetection() {
                 value={extractedId}
                 readOnly
               />
-              <button className="btn btn-outline-primary" onClick={handleCopy}>
+              <button
+                className="btn btn-outline-primary"
+                onClick={handleCopy}
+                disabled={!extractedId}
+              >
                 Copy
               </button>
             </div>
@@ -75,6 +79,46 @@ function TransactionIDDetection() {
         </div>
       </div>
 
+      {/* ✅ History Table (Full Width Underneath) */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <div className="card shadow-sm">
+            <div className="card-header fw-bold">History</div>
+            <div className="card-body p-0">
+              <div className="table-responsive">
+                <table className="table table-hover table-bordered w-100 mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Date</th>
+                      <th>File Name</th>
+                      <th>Extracted ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.length > 0 ? (
+                      history.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.created_at}</td>
+                          <td>{item.type}</td>
+                          <td>{item.transaction_id}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="text-center text-muted py-3">
+                          No history found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
       <footer className="text-center mt-5 text-muted small">
         © 2024 Version 1.0
       </footer>
