@@ -4,6 +4,9 @@ import receiptRoutes from "./routes/receiptRoute.js";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import cors from "cors";
+import pool from "./config/db_config.js";
+import { col } from "sequelize";
+import { configDotenv } from "dotenv";
 const app = express();
 const PORT = 5000;
 
@@ -11,26 +14,24 @@ app.use(bodyParser.json());
 app.use(cors());
 // Initialize database connection
 const initDB = async () => {
-  const db = await open({
-    filename: "./database.sqlite",
-    driver: sqlite3.Database,
-  });
-
-  // Create table if it doesn't exist
-  await db.exec(`
+  const client = await pool.connect();
+  console.log("Connected to the database");
+  await client.query(`
     CREATE TABLE IF NOT EXISTS receipts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       type TEXT,
       transaction_id TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  // Make db accessible in controllers
-  app.locals.db = db;
+  client.release();
 };
 
 initDB();
+
+// Make pool accessible
+app.locals.db = pool;
 
 // Routes
 app.use("/api/receipts", receiptRoutes);
