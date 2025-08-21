@@ -16,14 +16,6 @@ app.use(cors());
 const initDB = async () => {
   const client = await pool.connect();
   console.log("Connected to the database");
-  await client.query(`
-    CREATE TABLE IF NOT EXISTS receipts (
-      id SERIAL PRIMARY KEY,
-      type TEXT,
-      transaction_id TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
 
   client.release();
 };

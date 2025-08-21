@@ -2,7 +2,8 @@ import re
 import easyocr
 import sys
 import json
-
+import warnings
+warnings.filterwarnings("ignore")
 def detect_receipt_type(text):
     text_lower = text.lower()
     if "edahabia" in text_lower and "sonelgaz" in text_lower:
@@ -37,8 +38,8 @@ def extract_text_easyocr(image_path):
     return "\n".join(result)
 
 if __name__ == "__main__":
-    #image_path = sys.argv[1]
-    image_path="../../receipts/sonalgasEccp.jpg"
+    image_path = sys.argv[1]
+    # image_path="../../receipts/sonalgasEccp.jpg"
     text = extract_text_easyocr(image_path)
     receipt_type = detect_receipt_type(text)
     transaction_ids = extract_transaction_id_by_type(text, receipt_type)
