@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { Upload } from "lucide-react";
 import { uploadReceipt } from "../api/api";
 
-function UploadBox({ onUploadSuccess }) {
+function UploadBox({ onUploadSuccess,setInProcess,setExtractedId }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -27,19 +26,21 @@ function UploadBox({ onUploadSuccess }) {
 
     try {
       setLoading(true);
+      setExtractedId("");
+      setInProcess(true);
       const response = await uploadReceipt(file);
-
       // 👉 notify parent (TransactionIDDetection) with response
-      if (onUploadSuccess) {9
-        console.log("Upload data:", response.saved);
+      if (onUploadSuccess) {
+        console.log("Upload data:", response.saved);      
         onUploadSuccess(response.saved);
       }
-
+      
       setFile(null);
     } catch (error) {
       console.error("Upload failed:", error);
       alert("Upload failed. Try again.");
     } finally {
+      setInProcess(false);
       setLoading(false);
     }
   };
@@ -47,7 +48,7 @@ function UploadBox({ onUploadSuccess }) {
   return (
     <div className="card shadow-sm border-0 mb-4">
       <div
-        className="card-body text-center border border-2 border-dashed rounded-3 p-5 bg-light"
+        className="card-body text-center  border-2 border-dashed rounded-3 p-5 bg-light"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
@@ -74,7 +75,7 @@ function UploadBox({ onUploadSuccess }) {
           onClick={handleUpload}
           disabled={loading}
         >
-          {loading ? "Uploading..." : "Upload Image"}
+          {loading ? "Uploaded" : "Upload Image"}
         </button>
       </div>
     </div>

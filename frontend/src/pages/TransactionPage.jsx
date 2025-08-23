@@ -6,7 +6,7 @@ import { getHistory } from "../api/api";
 function TransactionIDDetection() {
   const [extractedId, setExtractedId] = useState("");
   const [history, setHistory] = useState([]);
-
+  const [inProcess, setInProcess] = useState(false);
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -28,16 +28,17 @@ function TransactionIDDetection() {
   };
 
   // 👉 Called when UploadBox finishes upload
-  const handleUploadSuccess =  async (data) => {
+  const handleUploadSuccess =  async (savedReceipt) => {
     // backend should return something like:
     // { transaction_id: "TX123...", filename: "receipt.png", date: "2024-04-23" }
     try {
-        const data = await getHistory();
-        setHistory(data);
+      
+        const historyData = await getHistory();
+        setHistory(historyData);
       } catch (error) {
         console.error("Failed to fetch history:", error);
       }
-      setExtractedId(data.transaction_id || "");
+      setExtractedId(savedReceipt.transaction_id || "");
     };
 
   return (
@@ -50,7 +51,7 @@ function TransactionIDDetection() {
       {/* Upload + Extracted ID Section */}
       <div className="row">
         <div className="col-md-4 mb-4">
-          <UploadBox onUploadSuccess={handleUploadSuccess} />
+          <UploadBox onUploadSuccess={handleUploadSuccess} setInProcess={setInProcess} setExtractedId={setExtractedId} />
         </div>
 
         <div className="col-md-8">
@@ -59,6 +60,8 @@ function TransactionIDDetection() {
             <p className="mb-1 text-muted">
               {extractedId
                 ? "Receipt processed!"
+                : inProcess 
+                ? "Processing receipt..."
                 : "Upload a receipt to extract ID"}
             </p>
           </div>
@@ -125,7 +128,7 @@ function TransactionIDDetection() {
 
       {/* Footer */}
       <footer className="text-center mt-5 text-muted small">
-        © 2024 Version 1.0
+        © 2024 Version 1.0.1
       </footer>
     </div>
   );
