@@ -6,6 +6,8 @@ The system includes:
 
 🔹 OCR Service – extracts text from scanned or uploaded receipts.
 
+🔹 extended for adding more receipt types.
+
 🔹 Text Processing Layer – processes text using Regular expression to detect and classify transaction details.
 
 🔹 Backend API – built with Node.js/Python, provides endpoints for data management.
@@ -27,19 +29,28 @@ Make sure you have installed:
 
 # ▶ How to Run the Project
 
-### 1. Clone the repository
-
 ```bash
 git clone https://github.com/mehdibidjed/AI_Transaction.git
 cd AI_Transaction
+# Run with fresh build
 docker-compose up --build
+
+# Run in background
+docker-compose up -d
+
+# Stop containers
+docker-compose down
+
+# Access database inside container
+docker exec -it postgres_db psql -U postgres -d ai_transaction
+
 ```
 
 Once the container is running, open your browser and go to:
 
 http://localhost:3000
 
-Project Structure:
+# Project Structure:
 AI_Transaction/
 │── backend/
 │ │── server.js # Express server (API entry point)
@@ -73,3 +84,6 @@ AI_Transaction/
 │
 │── docker-compose.yml # Multi-service setup (backend, frontend, db, ocr if needed)
 │── README.md
+# Authors
+- **Zerbita Mehdi Bidje** – Project Developer  
+- **Boussehala Abdelaziz** – Project Manager
