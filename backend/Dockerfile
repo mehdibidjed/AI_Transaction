@@ -1,7 +1,21 @@
-# Base Node.js image
-FROM node:18
+FROM node:20-alpine
 
-# Install Python + system dependencies for EasyOCR
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+
+# Copy app source
+COPY . .
+
+# Expose backend port
+EXPOSE 5000
+
+# Run backend
+CMD ["npm", "start"]
+# Base image with Node.js (LTS)
+FROM node:20-bullseye
+
+# Install Python + required system dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -14,21 +28,26 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install EasyOCR and needed Python libs
-RUN pip3 install --break-system-packages --no-cache-dir easyocr numpy pillow scikit-image imageio
-
-# Set workdir
+# Set working directory
 WORKDIR /app
 
-# Install Node dependencies
+# Copy Node.js dependencies and install
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
-# Copy app source
+# Copy backend source code
 COPY . .
+
+# Install Python dependencies for OCR
+WORKDIR /app/ocr
+COPY ocr/requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Return to backend workdir
+WORKDIR /app
 
 # Expose backend port
 EXPOSE 5000
 
-# Run backend
+# Start the Node.js server
 CMD ["npm", "start"]
