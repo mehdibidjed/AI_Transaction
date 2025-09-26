@@ -16,6 +16,8 @@ def detect_receipt_type(text):
         return "CIB_CHARGILY"
     elif "edahabia" in text_lower :
         return "EDAHABIA"
+    elif "versement" in text_lower:
+        return "CCP"
     else:
         return "UNKNOWN"
 
@@ -24,7 +26,8 @@ def extract_transaction_id_by_type(text, receipt_type):
         "EDAHABIA_SONELGAZ": r'identifiant de la transaction\s*[:\-]?\s*([A-Za-z0-9\-]{36,})',
         "CIB_CHARGILY": r'id transaction\s*[:\-]?\s*([A-Za-z0-9]{15,})',
         "BARIDIMOB": r'identifiant de transation\s*[:\-]?[\s\S]*?([0-9]{6,})',
-        "BARIDIMOB_ELECTRONIC": r'transaction id\s*[:\-]?\s*([A-Za-z0-9]{6,})'
+        "BARIDIMOB_ELECTRONIC": r'transaction id\s*[:\-]?\s*([A-Za-z0-9]{6,})',
+        "CCP": r'(\d{6}\s+[A-Z0-9]{4}\s+\d{4}\s+\d{2}\s+\d{2}\s+\d{4})'
     }
     pattern = patterns.get(receipt_type)
     if not pattern:
@@ -39,7 +42,7 @@ def extract_text_easyocr(image_path):
 
 if __name__ == "__main__":
     image_path = sys.argv[1]
-    # image_path="../../receipts/sonalgasEccp.jpg"
+    # image_path="./receipts/ccp.jpg"
     text = extract_text_easyocr(image_path)
     receipt_type = detect_receipt_type(text)
     transaction_ids = extract_transaction_id_by_type(text, receipt_type)
